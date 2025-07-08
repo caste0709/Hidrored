@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import axios from "axios";
 
 const LoginForm: React.FC = () => {
   const { login } = useAuth();
@@ -36,7 +37,7 @@ const LoginForm: React.FC = () => {
           type="password"
           id="password-login"
           required
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
         />
       </div>
       <button
@@ -51,66 +52,104 @@ const LoginForm: React.FC = () => {
 
 const RegisterForm: React.FC = () => {
   const { login } = useAuth();
+  const [formData, setFormData] = useState({
+    nombre: "",
+    email: "",
+    telefono: "",
+    password: "",
+  });
+  const [error, setError] = useState<string | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    try {
+      // La URL completa es http://localhost:8080/api/usuarios/registro
+      // Usamos el proxy de Vite, por lo que solo necesitamos la ruta relativa.
+      const response = await axios.post("/api/usuarios/registro", formData);
+
+      console.log("Registro exitoso!", response.data);
+      alert(`Usuario ${response.data.nombre} registrado con éxito!`);
+
+      // Si el registro es exitoso, simulamos el inicio de sesión
+      login();
+    } catch (err) {
+      console.error("Error en el registro:", err);
+      setError("No se pudo completar el registro. Inténtalo de nuevo.");
+      alert(
+        "Error en el registro. Revisa la consola del navegador y del backend.",
+      );
+    }
+  };
+
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        login();
-      }}
-      className="space-y-6"
-    >
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && <p className="text-red-500 text-sm">{error}</p>}
       <div>
         <label
-          htmlFor="name-register"
+          htmlFor="nombre"
           className="block text-sm font-medium text-gray-700"
         >
           Nombre Completo
         </label>
         <input
           type="text"
-          id="name-register"
+          name="nombre"
+          id="nombre"
           required
+          onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
       <div>
         <label
-          htmlFor="email-register"
+          htmlFor="email"
           className="block text-sm font-medium text-gray-700"
         >
           Correo Electrónico
         </label>
         <input
           type="email"
-          id="email-register"
+          name="email"
+          id="email"
           required
+          onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
       <div>
         <label
-          htmlFor="phone-register"
+          htmlFor="telefono"
           className="block text-sm font-medium text-gray-700"
         >
           Teléfono
         </label>
         <input
           type="tel"
-          id="phone-register"
+          name="telefono"
+          id="telefono"
+          onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
       <div>
         <label
-          htmlFor="password-register"
+          htmlFor="password"
           className="block text-sm font-medium text-gray-700"
         >
           Contraseña
         </label>
         <input
           type="password"
-          id="password-register"
+          name="password"
+          id="password"
           required
+          onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
